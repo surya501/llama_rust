@@ -221,19 +221,35 @@ fn checkpoint_init_weights(p: &Config, f: &mut std::fs::File) -> Result<Transfor
         freq_cis_real: read_weights_from_file(p.seq_len * head_size / 2, f)?,
         freq_cis_imag: read_weights_from_file(p.seq_len * head_size / 2, f)?,
     };
-    println!("token_embedding_table: {:?}", w.token_embedding_table.len());
-    println!("rms_att_weight: {:?}", w.rms_att_weight.len());
-    println!("wq: {:?}", w.wq.len());
-    println!("wk: {:?}", w.wk.len());
-    println!("wv: {:?}", w.wv.len());
-    println!("wo: {:?}", w.wo.len());
-    println!("rms_ffn_weight: {:?}", w.rms_ffn_weight.len());
-    println!("w1: {:?}", w.w1.len());
-    println!("w2: {:?}", w.w2.len());
-    println!("w3: {:?}", w.w3.len());
-    println!("rms_final_weight: {:?}", w.rms_final_weight.len());
-    println!("freq_cis_real: {:?}", w.freq_cis_real.len());
-    println!("freq_cis_imag: {:?}", w.freq_cis_imag.len());
+
+    println!(
+        "token_embedding_table: {:?} \
+        rms_ffn_weight: {:?} \
+        rms_att_weight: {:?} \n\
+        wq: {:?} \
+        wk: {:?} \
+        wv: {:?} \
+        wo: {:?} \n\
+        w1: {:?} \
+        w2: {:?} \
+        w3: {:?} \n\
+        rms_final_weight: {:?} \
+        freq_cis_real: {:?} \
+        freq_cis_imag: {:?} \n\n",
+        w.token_embedding_table.len(),
+        w.rms_ffn_weight.len(),
+        w.rms_att_weight.len(),
+        w.wq.len(),
+        w.wk.len(),
+        w.wv.len(),
+        w.wo.len(),
+        w.w1.len(),
+        w.w2.len(),
+        w.w3.len(),
+        w.rms_final_weight.len(),
+        w.freq_cis_real.len(),
+        w.freq_cis_imag.len(),
+    );
 
     Ok(w)
 }
@@ -279,15 +295,23 @@ fn softmax(x: &mut [f32], size: usize) {
     });
 }
 
+// fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
+//     // W (d,n) @ x (n,) -> xout (d,)
+//     for i in 0..d {
+//         let mut val = 0.0f32;
+//         for j in 0..n {
+//             val += w[i * n + j] * x[j];
+//         }
+//         xout[i] = val;
+//     }
+// }
+
+// Reimplement the matmul program using iterators
 fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
-    // W (d,n) @ x (n,) -> xout (d,)
-    for i in 0..d {
-        let mut val = 0.0f32;
-        for j in 0..n {
-            val += w[i * n + j] * x[j];
-        }
-        xout[i] = val;
-    }
+    let result = (0..d)
+        .map(|i| (0..n).map(|j| w[i * n + j] * x[j]).sum())
+        .collect::<Vec<f32>>();
+    xout.copy_from_slice(&result);
 }
 
 fn transformer(token: usize, pos: usize, p: &Config, s: &mut RunState, w: &TransformerWeights) {
