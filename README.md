@@ -21,11 +21,7 @@ wget https://karpathy.ai/llama2c/model.bin -P out
 
 (if that doesn't work try [google drive](https://drive.google.com/file/d/1aTimLdx3JktDXxcHySNrZJOOk8Vb1qBR/view?usp=share_link)).
 
-## how to run
-
-
-
-Once we have the model.bin file, we can inference in C. Compile and run code as follows
+Once we have the model.bin file, we can inference in Rust. Compile and run code as follows
 
 ```bash
 cargo run --release --  out/model.bin

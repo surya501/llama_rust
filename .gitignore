@@ -1,1 +1,12 @@
 /target
+
+# ignore the artifacts that we copied.
+tokenizer.bin
+out/model.bin
+
+# this is the C file that we compiled
+run.c
+
+#ignore performance data
+perf.data*
+flamegraph.svg
