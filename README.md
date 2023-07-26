@@ -45,6 +45,7 @@ cargo +nightly run --features simd  --release --  out/model.bin
 | Matmul code using iterators | 69 |
 | Simd code (no AVX; 4 in parallel) | 120 |
 | Simd code (AVX / 8 in parallel) | 180 |
+| Rayon + matmul iterators | 217|
 
 Install flamegraph following instructions in the [repo](https://github.com/flamegraph-rs/flamegraph). Profile using flamegraphs using the command:
 ```bash
@@ -58,7 +59,7 @@ cargo +nightly flamegraph  --features simd --  out/model.bin
 
 - [ ] Criterion for benchmarking
 - [x] Profile / Flamegraph / etc
-- [ ] Rayon for Multithread
+- [x] Rayon for Multithread
 - [x] Simd via Rust
 - [ ] Remove unsafe parse for config
 - [ ] run in browser

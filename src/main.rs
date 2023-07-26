@@ -1,5 +1,6 @@
 use clap::Parser;
 use rand::prelude::*;
+use rayon::prelude::*;
 use std::{
     fs::File,
     io::{Read, Result},
@@ -310,6 +311,7 @@ fn softmax(x: &mut [f32], size: usize) {
 #[cfg(not(feature = "simd"))]
 fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     let result = (0..d)
+        .into_par_iter()
         .map(|i| (0..n).map(|j| w[i * n + j] * x[j]).sum())
         .collect::<Vec<f32>>();
     xout.copy_from_slice(&result);
@@ -322,7 +324,7 @@ fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     assert!(n % 16 == 0); // Make sure n is divisible by 4 for this example
     let simd_width = 8; // Change to 8 for AVX (256-bit SIMD)
 
-    for i in 0..d {
+    (0..d).for_each(|i| {
         let mut sum = f32x8::splat(0.0); // For AVX, use f32x8::splat(0.0)
 
         for j in (0..n).step_by(simd_width) {
@@ -332,7 +334,7 @@ fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
         }
 
         xout[i] = sum.sum(); // Sum the SIMD vector elements to get the final value
-    }
+    });
 }
 
 fn transformer(token: usize, pos: usize, p: &Config, s: &mut RunState, w: &TransformerWeights) {
