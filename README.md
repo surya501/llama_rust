@@ -27,16 +27,39 @@ Once we have the model.bin file, we can inference in Rust. Compile and run code 
 cargo run --release --  out/model.bin
 ```
 
+Simd code requires nightly compiler, so use the following command
+
+```bash
+cargo +nightly run --features simd  --release --  out/model.bin
+```
+
+
 ## performance
 
 *Add stuff as we optimize this*
 
+
+| Version | Tokens/sec |
+| ----------- | ---------- |
+| Original code | 62 |
+| Matmul code using iterators | 69 |
+| Simd code (no AVX; 4 in parallel) | 120 |
+| Simd code (AVX / 8 in parallel) | 180 |
+
+Install flamegraph following instructions in the [repo](https://github.com/flamegraph-rs/flamegraph). Profile using flamegraphs using the command:
+```bash
+cargo flamegraph  --  out/model.bin
+```
+For simd enabled code, profile using the following command:
+```bash
+cargo +nightly flamegraph  --features simd --  out/model.bin
+```
 ## todos in no particular order
 
 - [ ] Criterion for benchmarking
-- [ ] Profile / Flamegraph / etc
+- [x] Profile / Flamegraph / etc
 - [ ] Rayon for Multithread
-- [ ] Simd via Rust
+- [x] Simd via Rust
 - [ ] Remove unsafe parse for config
 - [ ] run in browser
 - [ ] wgpu
