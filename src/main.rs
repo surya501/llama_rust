@@ -332,17 +332,21 @@ fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     assert!(n % 16 == 0); // Make sure n is divisible by 4 for this example
     let simd_width = 8; // Change to 8 for AVX (256-bit SIMD)
 
-    (0..d).for_each(|i| {
-        let mut sum = f32x8::splat(0.0); // For AVX, use f32x8::splat(0.0)
+    let result = (0..d)
+        .into_par_iter()
+        .map(|i| {
+            let mut sum = f32x8::splat(0.0); // For AVX, use f32x8::splat(0.0)
 
-        for j in (0..n).step_by(simd_width) {
-            let x_chunk = f32x8::from_slice_unaligned(&x[j..]);
-            let w_chunk = f32x8::from_slice_unaligned(&w[i * n + j..]);
-            sum += x_chunk * w_chunk;
-        }
+            for j in (0..n).step_by(simd_width) {
+                let x_chunk = f32x8::from_slice_unaligned(&x[j..]);
+                let w_chunk = f32x8::from_slice_unaligned(&w[i * n + j..]);
+                sum += x_chunk * w_chunk;
+            }
 
-        xout[i] = sum.sum(); // Sum the SIMD vector elements to get the final value
-    });
+            sum.sum() // Sum the SIMD vector elements to get the final value
+        })
+        .collect::<Vec<f32>>();
+    xout.copy_from_slice(&result);
 }
 
 fn transformer(token: usize, pos: usize, p: &Config, s: &mut RunState, w: &TransformerWeights) {

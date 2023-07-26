@@ -48,6 +48,7 @@ cargo +nightly run --features simd  --release --  out/model.bin
 | Rayon + matmul iterators | 217|
 | Loop unrolling | 65|
 | loop unrolling + Rayon| 214|
+| SIMD + Rayon | 225 |
 
 Install flamegraph following instructions in the [repo](https://github.com/flamegraph-rs/flamegraph). Profile using flamegraphs using the command:
 ```bash
