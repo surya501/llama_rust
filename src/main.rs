@@ -15,7 +15,7 @@ fn main() {
     let args = Args::parse();
     println!("{:?}", args);
 
-    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(
+    let mut _rng = rand_chacha::ChaCha8Rng::seed_from_u64(
         args.seed.unwrap_or(
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
