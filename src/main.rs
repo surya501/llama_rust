@@ -295,27 +295,35 @@ fn softmax(x: &mut [f32], size: usize) {
         x[i] /= sum;
     });
 }
-
-// fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
-//     // W (d,n) @ x (n,) -> xout (d,)
-//     for i in 0..d {
-//         let mut val = 0.0f32;
-//         for j in 0..n {
-//             val += w[i * n + j] * x[j];
-//         }
-//         xout[i] = val;
-//     }
-// }
-
-// Reimplement the matmul program using iterators
 #[cfg(not(feature = "simd"))]
 fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
+    // W (d,n) @ x (n,) -> xout (d,)
     let result = (0..d)
         .into_par_iter()
-        .map(|i| (0..n).map(|j| w[i * n + j] * x[j]).sum())
+        .map(|i| {
+            let mut val = 0.0f32;
+            for j in (0..n).step_by(4) {
+                // Unroll the loop by 4 for better performance (and SIMD utilization?)
+                val += w[i * n + j] * x[j];
+                val += w[i * n + j + 1] * x[j + 1];
+                val += w[i * n + j + 2] * x[j + 2];
+                val += w[i * n + j + 3] * x[j + 3];
+            }
+            val
+        })
         .collect::<Vec<f32>>();
     xout.copy_from_slice(&result);
 }
+
+// Reimplement the matmul program using iterators
+// #[cfg(not(feature = "simd"))]
+// fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
+//     let result = (0..d)
+//         .into_par_iter()
+//         .map(|i| (0..n).map(|j| w[i * n + j] * x[j]).sum())
+//         .collect::<Vec<f32>>();
+//     xout.copy_from_slice(&result);
+// }
 
 #[cfg(feature = "simd")]
 use packed_simd::f32x8; // For AVX (256-bit SIMD) use packed_simd::f32x8

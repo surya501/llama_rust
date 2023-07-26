@@ -46,6 +46,8 @@ cargo +nightly run --features simd  --release --  out/model.bin
 | Simd code (no AVX; 4 in parallel) | 120 |
 | Simd code (AVX / 8 in parallel) | 180 |
 | Rayon + matmul iterators | 217|
+| Loop unrolling | 65|
+| loop unrolling + Rayon| 214|
 
 Install flamegraph following instructions in the [repo](https://github.com/flamegraph-rs/flamegraph). Profile using flamegraphs using the command:
 ```bash
