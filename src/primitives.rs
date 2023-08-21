@@ -1,3 +1,4 @@
+#[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
 pub fn sample(probabilities: &[f32], n: usize) -> i32 {
@@ -71,8 +72,12 @@ pub fn softmax(x: &mut [f32], size: usize) {
 #[cfg(not(feature = "simd"))]
 pub fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     // W (d,n) @ x (n,) -> xout (d,)
-    let result = (0..d)
-        .into_par_iter()
+    #[cfg(feature = "parallel")]
+    let iter = (0..d).into_par_iter();
+    #[cfg(not(feature = "parallel"))]
+    let iter = (0..d).into_iter();
+
+    let result = iter
         .map(|i| {
             let mut val = 0.0f32;
             for j in (0..n).step_by(4) {
@@ -105,8 +110,12 @@ pub fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     assert!(n % 16 == 0); // Make sure n is divisible by 4 for this example
     let simd_width = 8; // Change to 8 for AVX (256-bit SIMD)
 
-    let result = (0..d)
-        .into_par_iter()
+    #[cfg(feature = "parallel")]
+    let iter = (0..d).into_par_iter();
+    #[cfg(not(feature = "parallel"))]
+    let iter = (0..d).into_iter();
+
+    let result = iter
         .map(|i| {
             let mut sum = f32x8::splat(0.0); // For AVX, use f32x8::splat(0.0)
 
