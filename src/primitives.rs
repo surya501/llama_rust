@@ -1,3 +1,7 @@
+#![no_std]
+extern crate alloc;
+use alloc::vec::Vec;
+
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
@@ -72,6 +76,7 @@ pub fn softmax(x: &mut [f32], size: usize) {
 #[cfg(not(feature = "simd"))]
 pub fn matmul(xout: &mut [f32], x: &[f32], w: &[f32], n: usize, d: usize) {
     // W (d,n) @ x (n,) -> xout (d,)
+
     #[cfg(feature = "parallel")]
     let iter = (0..d).into_par_iter();
     #[cfg(not(feature = "parallel"))]
